@@ -11,6 +11,7 @@ def main():
 	n = int(f.readline().split('\n')[0])
 	f.close()
 
+	# account for the empty set
 	count = 1
 	for i in range(1,n+1):
 		count += combinations(n, i)
