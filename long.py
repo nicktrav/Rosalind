@@ -1,4 +1,5 @@
-import re
+import networkx as nx
+import openopt
 
 # load the reads in from file
 def load_reads(f):
@@ -21,120 +22,64 @@ def load_reads(f):
 
 	return s
 
-# search for a read to splice to the end of the superstring.
-# Return the read, the start position and length of the substring. Return Null if
-# no candidate was found
-def search_add_to_end(superstring, reads):
-	# search for candidates to splice to END of superstring
-	for start in range(0, len(superstring)):
-		looking_for = superstring[start:]
-		# print 'searching for \'%s\'' % looking_for
-		for i in range(len(reads)):
-			# print '\tin reads[%i] = %s' % (i, reads[i])
-			end = len(looking_for)
-			# print '\tend = %i' % -start
-			# print '\t\treads[i][:end] = %s' % reads[i][:end+1]
-			if reads[i][:end] == looking_for:
-				# print '\t\tFOUND in read %d' % i
-				# print '\t\twith end position %d' % end
-				# print reads[i][-start:]				
-				return (i, end, len(reads[i])-end)
-	return (0,0,None)
+# initialise a graph, where each node is a read
+def init_graph(reads):
+	G = nx.DiGraph()
+	G.add_nodes_from(reads)
 
-# search for a read to splice to the START of the superstring.
-# Return the read,the end position and length of substring. Return Null if
-# no candidate was found
-def search_add_to_start(superstring, reads):
-	# search for candidates to splice to START of superstring
-	for end in range(len(superstring), 0, -1):
-		looking_for = superstring[:end]
-		# print 'searching for \'%s\'' % looking_for
-		for i in range(len(reads)):
-			# print '\tin reads[%i] = %s' % (i, reads[i])
-			start = len(reads[i]) - len(looking_for)
-			# print '\tend = %i' % -start
-			# print '\t\treads[i][:end] = %s' % reads[i][:end+1]
-			if reads[i][start:] == looking_for:
-				# print '\t\tFOUND in read %d' % i
-				# print '\t\twith end position %d' % end
-				# print reads[i][-start:]
-				return (i, start, start)
-	return (0,0,None)
+	return G
 
-# splice read[pos:] to end of superstring
-# return the superstring
-def splice_to_end(superstring, read, pos):
-	return superstring + read[pos:]
+def compare_reads(r1,r2):
+	"""Is there overlap between r1 and r2? Return length or r2 after overlap removed"""
+	# overlap: r1 ... r2
+	# starting position i in r1
+	for i in range(len(r1)):
+		looking_for = r1[i:]
+		if (r2[:len(looking_for)] == looking_for):
+			return len(looking_for)
 
-# splice read[:pos] to start of superstring
-# return the superstring
-def splice_to_start(superstring, read, pos):
-	# print read[:pos]
-	return read[:pos+1] + superstring 
+	return 0
+
+# create a directed edge between nodes that have overlap
+def connect_reads(graph):
+	for node in graph.nodes():
+		other_nodes = graph.nodes()[:]
+		other_nodes.remove(node)
+
+		for other_node in other_nodes:
+			overlap = compare_reads(node, other_node)
+			if overlap >= len(other_node)/2:
+				graph.add_edge(node, other_node, weight = overlap)
 
 def main():
 	# read the data from file
-	reads = load_reads('/Volumes/Data/nick/Downloads/rosalind_long_1_dataset.txt')
+	reads = load_reads('/Volumes/Data/nick/Downloads/rosalind_long.txt')
 
-	global full_len
-	global half_len
+	# create a graph, where each node is a read, and each directed edge is an overlap
+	G = init_graph(reads)
 
-	full_len = len(reads[0])
+	# connect the reads
+	connect_reads(G)
 
-	# half the length of the reads
-	if len(reads[0]) % 2 == 0:
-		# even
-		half_len = len(reads[0]) / 2
-	else:
-		# odd
-		half_len = len(reads[0]) / 2 + 1
+	max_path = []
+	for i in range(0, len(reads)):
+		for j in range(0, len(reads)):
+			if i != j:
+				paths = nx.all_simple_paths(G, reads[i], reads[j])
+				for path in paths:
+					if len(path) == 50:
+						max_path.append(path)
 
-	# make the first read the start of the superstring
-	superstring = reads[0]
-	# remove from the list of reads
-	reads.pop(0)
-
-	# print search_add_to_end(superstring, reads)
-	# return
-
-	# print reads
-
-	while reads != []:
-		end_find = search_add_to_end(superstring, reads)
-		start_find = search_add_to_start(superstring, reads)
-
-		# print reads
-
-		# superstring = splice_to_end(superstring, reads[end_find[0]], end_find[1])
-		# reads.pop(end_find[0])
-
-		# superstring = splice_to_start(superstring, reads[start_find[0]], start_find[1])
-		# reads.pop(start_find[0])		
-
-		# print end_find
-		# print start_find
-
-		if (end_find[2] < start_find[2]) and (end_find[2] != None):
-			# print 'Splicing to END'
-			superstring = splice_to_end(superstring, reads[end_find[0]], end_find[1])
-			reads.pop(end_find[0])
-		elif (start_find[2] < end_find[2]) and (start_find[2] != None):
-			# print 'yes'
-			# print 'Splicing to START'
-			superstring = splice_to_start(superstring, reads[start_find[0]], start_find[1])
-			reads.pop(start_find[0])
-		else:
-			# print 'Splicing to END'
-			superstring = splice_to_end(superstring, reads[end_find[0]], end_find[1])
-			reads.pop(end_find[0])
-		# print superstring
-		# print reads
-		print len(reads)
+	superstring = ''
+	for i in range(0, len(max_path[0])-1):
+		overlap = compare_reads(max_path[0][i], max_path[0][i+1])
+		# print overlap
+		superstring = superstring + max_path[0][i][:-overlap]
+	superstring += max_path[0][-1]
 
 	print superstring
 
-	return	
-	
+	return
 
 if __name__ == '__main__':
 	main()
