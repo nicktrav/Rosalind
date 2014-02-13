@@ -1,3 +1,12 @@
+MAPPING  = {'A':'U', 'U':'A', 'G':'C', 'C':'G'}
+def op(x):
+	"""Map a base to its conjugate"""
+	if x not in MAPPING:
+		print 'ERROR: not a valid character.'
+		return -1
+
+	return MAPPING[x]
+
 CAT_LIST = {0:1, 1:1}
 def catalan(n):
 	"""Return the n-th catalan number"""
@@ -24,6 +33,9 @@ def main():
 
 	# close file 
 	f.close()
+
+	# the string
+	s = lines[-1]	
 
 if __name__ == '__main__':
 	main()
