@@ -1,3 +1,7 @@
+def isolated_pair(i, s):
+	"""Is this an 'isolated pair?"""
+	return None
+
 def match(i, j):
 	"""Are i and j conjugate pairs?"""
 	return i == op(j)
