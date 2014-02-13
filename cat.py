@@ -1,3 +1,7 @@
+def match(i, j):
+	"""Are i and j conjugate pairs?"""
+	return i == op(j)
+
 MAPPING  = {'A':'U', 'U':'A', 'G':'C', 'C':'G'}
 def op(x):
 	"""Map a base to its conjugate"""
