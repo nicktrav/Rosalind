@@ -1,6 +1,12 @@
-def isolated_pair(i, s):
+def isolate_pairs(s):
 	"""Is this an 'isolated pair?"""
-	return None
+	pairs = []
+
+	for i in range(len(s)):
+		if (match(s[i], s[(i+1) % len(s)]) == True) and (match(s[(i+1) % len(s)], s[(i+2) % len(s)]) == False) and (match(s[i], s[(i-1) % len(s)]) == False):
+			pairs.append((i,(i+1) % len(s)))
+
+	return pairs
 
 def match(i, j):
 	"""Are i and j conjugate pairs?"""
@@ -43,7 +49,7 @@ def main():
 	f.close()
 
 	# the string
-	s = lines[-1]	
+	s = lines[-1]
 
 if __name__ == '__main__':
 	main()
