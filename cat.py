@@ -1,11 +1,34 @@
+def recursive_reduce(s):
+	"""Recursively eliminate all isolated pairs.
+	Do this until there are no isolated pairs remaining."""
+
+	# initial isolation
+	r = isolate_pairs(s)
+
+	# if no isolated pairs remain, return what is left
+	if len(r) == 0:
+		return s
+
+	# otherwise, remove the bases at the defined locations
+	s_list = list(s)
+	for pair in r:
+		s_list[pair[0]] = ''
+		s_list[pair[1]] = ''
+
+	return recursive_reduce(''.join(s_list))
+
 def isolate_pairs(s):
 	"""Is this an 'isolated pair?"""
+	# a list of isolated pairs
 	pairs = []
 
 	for i in range(len(s)):
+		# definition of an isolated pair
 		if (match(s[i], s[(i+1) % len(s)]) == True) and (match(s[(i+1) % len(s)], s[(i+2) % len(s)]) == False) and (match(s[i], s[(i-1) % len(s)]) == False):
+			# add to the list of isolated pairs
 			pairs.append((i,(i+1) % len(s)))
 
+	# return the list
 	return pairs
 
 def match(i, j):
@@ -50,6 +73,8 @@ def main():
 
 	# the string
 	s = lines[-1]
+
+	print recursive_reduce(s)
 
 if __name__ == '__main__':
 	main()
