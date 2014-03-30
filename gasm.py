@@ -57,7 +57,7 @@ def addNodes(G, l):
 
 	return G
 
-def addEdges(G, l, S):
+def addEdges(G, l):
 	"""Add edges from the list l, to the graph G"""
 	for kmer in l:
 		prefix = kmer.prefix()
@@ -68,8 +68,6 @@ def addEdges(G, l, S):
 			G.add_edge(prefix, suffix, string=kmer)
 		else:
 			continue
-
-		G.add_edge(prefix, suffix, string=kmer)	
 
 def cycles_k(S, k):
 	"""Look for cycles in the set of all k-mers o"""
@@ -102,7 +100,7 @@ def cycles_k(S, k):
 	addNodes(G, prefixSuffix)
 
 	# add edges
-	addEdges(G, SuSrc_kmers, S_kmers)
+	addEdges(G, SuSrc_kmers)
 
 	# the simple cycles of the graph
 	cycles = list(nx.simple_cycles(G))
